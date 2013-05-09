@@ -12,6 +12,7 @@
 #import "MainViewController.h"
 #import "TOCViewController.h"
 #import "LegendViewController.h"
+#import "ResultsViewController.h"
 
 @interface MainViewController()
 
@@ -48,7 +49,7 @@
     AGSDynamicMapServiceLayer *dynamicLyr = [AGSDynamicMapServiceLayer dynamicMapServiceLayerWithURL:stateMapUrl];
     [self.mapView addMapLayer:dynamicLyr withName:@"States"];
     
-    NSURL *mapUrl3 = [NSURL URLWithString:kDynamicMapServiceURL];
+    NSURL *mapUrl3 = [NSURL URLWithString:kDynamicMapServiceURL]; // ERS SNAP
     
     NSError *error = nil;
     AGSMapServiceInfo *info = [AGSMapServiceInfo mapServiceInfoWithURL:mapUrl3 error:&error];
@@ -72,12 +73,23 @@
                                                 xmax:-7186578
                                                 ymax:6962565
 									spatialReference:sr];
-	[self.mapView zoomToEnvelope:env animated:NO];
+	[self.mapView zoomToEnvelope:env animated:YES];
     
-    // current location marker
+    // ADDED FOR GEOCODING FIND ADDRESS, also need for popup location!
+    
+    //set the delegate on the mapView so we get notifications for user interaction with the callout for geocoding
+    self.mapView.callout.delegate = self;
+    
+    // TODO: this might not be necessary
+    //create the graphics layer that the geocoding result
+    //will be stored in and add it to the map
+    self.graphicsLayer = [AGSGraphicsLayer graphicsLayer];
+    [self.mapView addMapLayer:self.graphicsLayer withName:@"Search Layer"];
+    
+    // current location marker: user's current location as starting point
     [self.mapView.locationDisplay startDataSource];
     
-	//A data source that will hold the legend items
+	// LEGEND: a data source that will hold the legend items
 	self.legendDataSource = [[LegendDataSource alloc] init];
 	
 	//Initialize the legend view controller
@@ -87,6 +99,18 @@
 	self.legendViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     
 	self.legendViewController.legendDataSource = self.legendDataSource;
+    
+    // ADDED FOR POPUP BY LOCATION
+    _mapView.touchDelegate = self;
+    
+    //create identify task
+	self.identifyTask = [AGSIdentifyTask identifyTaskWithURL:[NSURL URLWithString:kDynamicMapServiceURL]];
+	self.identifyTask.delegate = self;
+	
+	//create identify parameters
+	self.identifyParams = [[AGSIdentifyParameters alloc] init];
+    
+    self.mapView.showMagnifierOnTapAndHold = YES;
 }
 
 #pragma mark -
@@ -99,15 +123,16 @@
 }
 
 - (void) mapViewDidLoad:(AGSMapView *) mapView {
-    NSLog(@"loaded mapView");
+   // NSLog(@"loaded mapView");
 }
 
 #pragma mark - show the associated table view depending on which button was clicked
 
+// sample code used a popOverController for the iPad, but it got confusing when both the legend and TOC are available.
 - (IBAction)presentTableOfContents:(id)sender
 {
     //If iPad, show legend in the PopOver, else transition to the separate view controller
-	if([[AGSDevice currentDevice] isIPad]) {
+	/*if([[AGSDevice currentDevice] isIPad]) {
         if(!self.popOverController) {
             self.popOverController = [[UIPopoverController alloc] initWithContentViewController:self.tocViewController];
             self.tocViewController.popOverController = self.popOverController;
@@ -118,25 +143,229 @@
 	}
     else {
 		[self presentModalViewController:self.tocViewController animated:YES];
-	}    
+	} 
+     */
+    [self presentModalViewController:self.tocViewController animated:YES];
 }
 
 - (IBAction) presentLegendViewController: (id) sender{
 	//If iPad, show legend in the PopOver, else transition to the separate view controller
-	if([[AGSDevice currentDevice] isIPad]){
-        
-        self.popOverController = [[UIPopoverController alloc]
-								  initWithContentViewController:self.legendViewController];
-		[self.popOverController setPopoverContentSize:CGSizeMake(250, 500)];
-		self.popOverController.passthroughViews = [NSArray arrayWithObject:self.view];
-		self.legendViewController.popOverController = self.popOverController;
-        
-		[_popOverController presentPopoverFromRect:self.legendButton.frame inView:self.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES ];
-		
-	}else {
+	/*if([[AGSDevice currentDevice] isIPad]){
+        if(!self.popOverController) {
+            self.popOverController = [[UIPopoverController alloc] initWithContentViewController:self.legendViewController];
+            self.legendViewController.popOverController = self.popOverController;
+            self.popOverController.popoverContentSize = CGSizeMake(320, 500);
+            self.popOverController.passthroughViews = [NSArray arrayWithObject:self.view];
+        }
+		[self.popOverController presentPopoverFromRect:self.legendButton.frame inView:self.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES ];
+        }
+    */
+    /*
+        else {
 		[self presentModalViewController:self.legendViewController animated:YES];
 	}
+    */
+    [self presentModalViewController:self.legendViewController animated:YES];
+}
+
+#pragma mark -
+#pragma mark AGSCalloutDelegate -- DISPLAYS THE box with related information for the location
+
+- (void) didClickAccessoryButtonForCallout:(AGSCallout *) callout
+{
+    AGSGraphic* graphic = (AGSGraphic*) callout.representedObject;
+    //The user clicked the callout button, so display the complete set of results
+    ResultsViewController *resultsVC = [[ResultsViewController alloc] initWithNibName:@"ResultsViewController" bundle:nil];
     
+    //set our attributes/results into the results VC
+    resultsVC.results = [graphic allAttributes];
+    
+    //display the results vc modally
+    [self presentModalViewController:resultsVC animated:YES];
+	
+}
+
+
+#pragma mark -
+#pragma mark AGSLocatorDelegate
+
+- (void)locator:(AGSLocator *)locator operation:(NSOperation *)op didFindLocationsForAddress:(NSArray *)candidates
+{
+    //check and see if we didn't get any results
+	if (candidates == nil || [candidates count] == 0)
+	{
+        //show alert if we didn't get results
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No Results"
+                                                        message:@"No Results Found By Locator"
+                                                       delegate:nil
+                                              cancelButtonTitle:@"OK"
+                                              otherButtonTitles:nil];
+        
+        [alert show];
+	}
+	else
+	{
+        //use these to calculate extent of results
+        double xmin = DBL_MAX;
+        double ymin = DBL_MAX;
+        double xmax = -DBL_MAX;
+        double ymax = -DBL_MAX;
+		
+		//create the callout template, used when the user displays the callout
+		self.calloutTemplate = [[AGSCalloutTemplate alloc]init];
+        
+        //loop through all candidates/results and add to graphics layer
+		for (int i=0; i<[candidates count]; i++)
+		{
+			AGSAddressCandidate *addressCandidate = (AGSAddressCandidate *)[candidates objectAtIndex:i];
+            
+            //get the location from the candidate
+            AGSPoint *pt = addressCandidate.location;
+            
+            //accumulate the min/max
+            if (pt.x  < xmin)
+                xmin = pt.x;
+            
+            if (pt.x > xmax)
+                xmax = pt.x;
+            
+            if (pt.y < ymin)
+                ymin = pt.y;
+            
+            if (pt.y > ymax)
+                ymax = pt.y;
+            
+			//create a marker symbol to use in our graphic
+            AGSPictureMarkerSymbol *marker = [AGSPictureMarkerSymbol pictureMarkerSymbolWithImageNamed:@"BluePushpin.png"];
+            marker.offset = CGPointMake(9,16);
+            marker.leaderPoint = CGPointMake(-9, 11);
+            
+            //set the text and detail text based on 'Name' and 'Descr' fields in the attributes
+            self.calloutTemplate.titleTemplate = @"${Name}";
+            self.calloutTemplate.detailTemplate = @"${Descr}";
+			
+            //create the graphic
+			AGSGraphic *graphic = [[AGSGraphic alloc] initWithGeometry: pt
+																symbol:marker
+															attributes:[addressCandidate.attributes mutableCopy]
+                                                  infoTemplateDelegate:self.calloutTemplate];
+            
+            
+            //add the graphic to the graphics layer
+			[self.graphicsLayer addGraphic:graphic];
+            
+            if ([candidates count] == 1)
+            {
+                //we have one result, center at that point
+                [self.mapView centerAtPoint:pt animated:NO];
+                
+				// set the width of the callout
+				self.mapView.callout.width = 250;
+                
+                //show the callout
+                [self.mapView.callout showCalloutAtPoint:(AGSPoint*)graphic.geometry forGraphic:graphic animated:YES];
+            }
+			
+			//release the graphic bb
+		}
+        
+        //if we have more than one result, zoom to the extent of all results
+        int nCount = [candidates count];
+        if (nCount > 1)
+        {
+            AGSMutableEnvelope *extent = [AGSMutableEnvelope envelopeWithXmin:xmin ymin:ymin xmax:xmax ymax:ymax spatialReference:self.mapView.spatialReference];
+            [extent expandByFactor:1.5];
+			[self.mapView zoomToEnvelope:extent animated:YES];
+        }
+	}
+    
+}
+
+#pragma mark - AGSCalloutDelegate methods
+
+- (void)mapView:(AGSMapView *)mapView didClickAtPoint:(CGPoint)screen mapPoint:(AGSPoint *)mappoint graphics:(NSDictionary *)graphicsDict {
+    
+    //store for later use
+    self.mappoint = mappoint;
+    
+	//the layer we want is layer ‘5’ (from the map service doc)
+	self.identifyParams.layerIds = [NSArray arrayWithObjects:[NSNumber numberWithInt:1], nil];
+	self.identifyParams.tolerance = 3;
+	self.identifyParams.geometry = self.mappoint;
+	self.identifyParams.size = self.mapView.bounds.size;
+	self.identifyParams.mapEnvelope = self.mapView.visibleArea.envelope;
+	self.identifyParams.returnGeometry = YES;
+	self.identifyParams.layerOption = AGSIdentifyParametersLayerOptionAll;
+	self.identifyParams.spatialReference = self.mapView.spatialReference;
+    
+	//execute the task
+	[self.identifyTask executeWithParameters:self.identifyParams];
+}
+
+
+#pragma mark - AGSIdentifyTaskDelegate methods
+//results are returned
+- (void)identifyTask:(AGSIdentifyTask *)identifyTask operation:(NSOperation *)op didExecuteWithIdentifyResults:(NSArray *)results {
+    
+    //clear previous results
+    [self.graphicsLayer removeAllGraphics];
+    
+    if ([results count] > 0) {
+        
+        //add new results
+        AGSSymbol* symbol = [AGSSimpleFillSymbol simpleFillSymbol];
+        symbol.color = [UIColor colorWithRed:0 green:0 blue:1 alpha:0.5];
+        
+        NSString *title = nil;
+        NSUInteger layerID = 0;
+        
+        @try {
+            
+            // for each result, set the symbol and add it to the graphics layer
+            for (AGSIdentifyResult* result in results) {
+                result.feature.symbol = symbol;
+                [self.graphicsLayer addGraphic:result.feature];
+                _graphic = result.feature;
+                title = result.layerName;
+                layerID = result.layerId; // can this be a filter? not used
+            }
+            
+            self.mapView.callout.title = title; // this is just the title
+            self.mapView.callout.detail = @"Click for details";
+            
+            // Show callout for graphic
+            [self.mapView.callout showCalloutAtPoint:self.mappoint forGraphic:_graphic animated:YES];
+        }
+        @catch (NSException * e) {
+            NSLog(@"Exception: %@", e);
+        }
+        @finally {
+            NSLog(@"finally");
+        }
+    }
+}
+
+//if there's an error with the query display it to the user
+- (void)identifyTask:(AGSIdentifyTask *)identifyTask operation:(NSOperation *)op didFailWithError:(NSError *)error {
+	
+	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error"
+													message:[error localizedDescription]
+												   delegate:nil
+										  cancelButtonTitle:@"OK"
+										  otherButtonTitles:nil];
+	[alert show];
+}
+
+- (void)locator:(AGSLocator *)locator operation:(NSOperation *)op didFailLocationsForAddress:(NSError *)error
+{
+    //The location operation failed, display the error
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Locator Failed"
+                                                    message:[NSString stringWithFormat:@"Error: %@", error.description]
+                                                   delegate:nil
+                                          cancelButtonTitle:@"OK"
+                                          otherButtonTitles:nil];
+    
+    [alert show];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {

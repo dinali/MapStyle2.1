@@ -137,9 +137,10 @@
 }
 
 - (void)doneButtonPressed {
-    if([[AGSDevice currentDevice] isIPad])
+    /*if([[AGSDevice currentDevice] isIPad])
 		[self.popOverController dismissPopoverAnimated:YES];
 	else
+     */
 		[self dismissModalViewControllerAnimated:YES];
     
 }

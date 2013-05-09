@@ -17,6 +17,8 @@
 		28D7ACF80DDB3853001CB0EB /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D7ACF70DDB3853001CB0EB /* MainViewController.m */; };
 		3B7F19E910D1BEB900AFD7FB /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B7F19E810D1BEB900AFD7FB /* CoreLocation.framework */; };
 		3B7F19EB10D1BEB900AFD7FB /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B7F19EA10D1BEB900AFD7FB /* QuartzCore.framework */; };
+		9698FD22173BDADD00CA5895 /* PopUpResultsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9698FD21173BDADD00CA5895 /* PopUpResultsViewController.xib */; };
+		969A55EE173ACB8F001D0BC2 /* erslogo_orig.png in Resources */ = {isa = PBXBuildFile; fileRef = 969A55ED173ACB8F001D0BC2 /* erslogo_orig.png */; };
 		969A770516FCB15B00851F40 /* ArcGIS.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 969A770416FCB15B00851F40 /* ArcGIS.bundle */; };
 		969C0BE81734087600FC6E79 /* ResultsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 969C0BE71734087600FC6E79 /* ResultsViewController.m */; };
 		969C0C001734244900FC6E79 /* ResultsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 969C0BFF1734244900FC6E79 /* ResultsViewController.xib */; };
@@ -63,6 +65,8 @@
 		3B7F19E810D1BEB900AFD7FB /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		3B7F19EA10D1BEB900AFD7FB /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* TableOfContentsSample-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TableOfContentsSample-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+		9698FD21173BDADD00CA5895 /* PopUpResultsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PopUpResultsViewController.xib; sourceTree = "<group>"; };
+		969A55ED173ACB8F001D0BC2 /* erslogo_orig.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = erslogo_orig.png; sourceTree = "<group>"; };
 		969A770416FCB15B00851F40 /* ArcGIS.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ArcGIS.bundle; sourceTree = "<group>"; };
 		969C0BE61734087600FC6E79 /* ResultsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ResultsViewController.h; path = ../../FoodResearchAtlas/ResultsViewController.h; sourceTree = "<group>"; };
 		969C0BE71734087600FC6E79 /* ResultsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ResultsViewController.m; path = ../../FoodResearchAtlas/ResultsViewController.m; sourceTree = "<group>"; };
@@ -169,19 +173,12 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				969C0C0B173442BF00FC6E79 /* map.png */,
-				969C0C091734427000FC6E79 /* index-cards.png */,
-				97B8C41916786197003B6E1B /* Default-568h@2x.png */,
+				969A55F1173AD63B001D0BC2 /* graphics */,
 				969A770416FCB15B00851F40 /* ArcGIS.bundle */,
-				C56B40D814CF923A003A46EB /* CircleArrowRight_sml.png */,
-				C56B40D914CF923A003A46EB /* CircleArrowDown_sml.png */,
-				C56B40FF14D722BF003A46EB /* checkbox_checked.png */,
-				C56B410014D722BF003A46EB /* checkbox_unchecked.png */,
-				97E8186A1304CDDF001E3C72 /* icon.png */,
-				97E8186B1304CDDF001E3C72 /* icon@2x.png */,
 				969C0BFF1734244900FC6E79 /* ResultsViewController.xib */,
 				969C0C061734395D00FC6E79 /* LegendViewController.xib */,
 				C56B409114C78B6C003A46EB /* TOCViewController.xib */,
+				9698FD21173BDADD00CA5895 /* PopUpResultsViewController.xib */,
 				2899E5210DE3E06400AC0155 /* MainViewController.xib */,
 				28AD733E0D9D9553002E5188 /* MainWindow.xib */,
 				8D1107310486CEB800E47090 /* TableOfContentsSample-Info.plist */,
@@ -207,6 +204,23 @@
 				97042290135505D9005310BA /* CoreText.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		969A55F1173AD63B001D0BC2 /* graphics */ = {
+			isa = PBXGroup;
+			children = (
+				969C0C0B173442BF00FC6E79 /* map.png */,
+				C56B40D814CF923A003A46EB /* CircleArrowRight_sml.png */,
+				C56B40D914CF923A003A46EB /* CircleArrowDown_sml.png */,
+				C56B40FF14D722BF003A46EB /* checkbox_checked.png */,
+				C56B410014D722BF003A46EB /* checkbox_unchecked.png */,
+				97E8186A1304CDDF001E3C72 /* icon.png */,
+				97E8186B1304CDDF001E3C72 /* icon@2x.png */,
+				969A55ED173ACB8F001D0BC2 /* erslogo_orig.png */,
+				969C0C091734427000FC6E79 /* index-cards.png */,
+				97B8C41916786197003B6E1B /* Default-568h@2x.png */,
+			);
+			name = graphics;
 			sourceTree = "<group>";
 		};
 		AF6FBC8A12550E5300F476B4 /* Resources-iPad */ = {
@@ -315,6 +329,8 @@
 				969C0C081734395D00FC6E79 /* LegendViewController.xib in Resources */,
 				969C0C0A1734427000FC6E79 /* index-cards.png in Resources */,
 				969C0C0C173442BF00FC6E79 /* map.png in Resources */,
+				969A55EE173ACB8F001D0BC2 /* erslogo_orig.png in Resources */,
+				9698FD22173BDADD00CA5895 /* PopUpResultsViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -356,7 +372,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TableOfContentsSample_Prefix.pch;
 				INFOPLIST_FILE = "TableOfContentsSample-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-all_load",
@@ -385,7 +401,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TableOfContentsSample_Prefix.pch;
 				INFOPLIST_FILE = "TableOfContentsSample-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-all_load",
