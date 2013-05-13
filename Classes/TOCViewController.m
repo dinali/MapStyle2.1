@@ -113,7 +113,7 @@
 
 #pragma mark -
 #pragma mark LayerInfoCellDelegate
-
+/* CHANGES the display of the map view layer depending on which layer was selected in the TOC, does not trigger ViewDidLoad in MainViewController, so there's no way the legend or Location popup data will be refreshed!! */
 - (void)layerVisibilityChanged:(BOOL)visibility forCell:(UITableViewCell *)cell
 {
     //retrieve the corresponding cell
@@ -121,6 +121,8 @@
     
     //get the layer info represented by the cell
     LayerInfo *layerInfo = [[self.mapViewLevelLayerInfo flattenElementsWithCacheRefresh:NO withLegend:YES] objectAtIndex:(cellIndexPath.row)];
+    
+    NSLog(@"layerName %@", layerInfo.layerName);
     
     //set the visibility of the layer info. 
     [layerInfo setVisible:visibility];

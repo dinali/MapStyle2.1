@@ -35,19 +35,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];    
 
-    //create the toc view controller
+    //create the toc view controller, toc view controller changes visibility of the mapView without calling this viewDidLoad method
     self.tocViewController = [[TOCViewController alloc] initWithMapView:self.mapView];
     
     // Calls method that adds the layer to the legend each time layer is loaded
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(respondToLayerLoaded:) name:AGSLayerDidLoadNotification object:nil];
-	
+    
     NSURL *mapUrl = [NSURL URLWithString:kTiledLayerURL];
 	AGSTiledMapServiceLayer *tiledLyr = [AGSTiledMapServiceLayer tiledMapServiceLayerWithURL:mapUrl];
 	[self.mapView addMapLayer:tiledLyr withName:@"Base Map"];
-    
-    NSURL *stateMapUrl = [NSURL URLWithString:kMapServiceURL];
-    AGSDynamicMapServiceLayer *dynamicLyr = [AGSDynamicMapServiceLayer dynamicMapServiceLayerWithURL:stateMapUrl];
-    [self.mapView addMapLayer:dynamicLyr withName:@"States"];
     
     NSURL *mapUrl3 = [NSURL URLWithString:kDynamicMapServiceURL]; // ERS SNAP
     
@@ -65,6 +61,10 @@
     } 
     
     [self.mapView addMapLayer:layer withName:@"Snap Benefits"];
+    
+    NSURL *stateMapUrl = [NSURL URLWithString:kMapServiceURL];
+    AGSDynamicMapServiceLayer *dynamicLyr = [AGSDynamicMapServiceLayer dynamicMapServiceLayerWithURL:stateMapUrl];
+    [self.mapView addMapLayer:dynamicLyr withName:@"States"];
     
     //Zooming to an initial envelope with the specified spatial reference of the map.
 	AGSSpatialReference *sr = [AGSSpatialReference webMercatorSpatialReference];
@@ -111,6 +111,7 @@
 	self.identifyParams = [[AGSIdentifyParameters alloc] init];
     
     self.mapView.showMagnifierOnTapAndHold = YES;
+    self.mapView.allowMagnifierToPanMap = YES;
 }
 
 #pragma mark -
